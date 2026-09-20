@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mengenal Blok Kode di Scratch</title>
+  <style>
+    :root {
+      --bg-1: #f4f8ff;
+      --bg-2: #eff7ff;
+      --ink: #1d2a3a;
+      --muted: #5c6f86;
+      --shadow: rgba(31, 51, 84, 0.15);
+      --motion: #4da3ff;
+      --looks: #b779ff;
+      --sound: #ff5ac8;
+      --events: #ffd93d;
+      --control: #ff9f43;
+      --sensing: #38d8ff;
+      --operators: #49d07d;
+      --variables: #ff7a38;
+      --panel: rgba(255,255,255,0.86);
+      --line: rgba(27, 36, 49, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      color: var(--ink);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .deck {
+      position: relative;
+      width: min(1280px, 94vw);
+      height: min(720px, 80vh);
+      margin-bottom: 84px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(140, 162, 186, 0.25);
+      border-radius: 28px;
+      box-shadow: 0 28px 70px rgba(30, 52, 84, 0.18);
+      overflow: visible;
+      backdrop-filter: blur(6px);
+    }
+
+    .deck::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgba(140, 162, 186, 0.08);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(18px) scale(0.99);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+      padding: 42px 54px 80px;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .slide[data-slide="13"] {
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .slide[data-slide="13"]::-webkit-scrollbar {
+      display: none;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(2.2rem, 3vw, 4rem); line-height: 1.1; }
+    h2 { font-size: clamp(1.8rem, 2vw, 3rem); margin-bottom: 18px; }
+    h3 { font-size: clamp(1.15rem, 1.5vw, 2rem); }
+    p, li { font-size: clamp(1rem, 1.2vw, 1.25rem); line-height: 1.6; }
+
+    .cover {
+      display: grid;
+      grid-template-columns: 1.35fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .cover-copy {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: rgba(77,163,255,0.12);
+      color: #1a57a8;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      margin-bottom: 18px;
+    }
+
+    .title-wrap {
+      position: relative;
+      display: inline-block;
+      padding-right: 20px;
+    }
+
+    .cover h1 {
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-shadow: 0 12px 30px rgba(71, 92, 136, 0.15);
+    }
+
+    .subtitle {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: clamp(1.1rem, 1.4vw, 1.55rem);
+      max-width: 720px;
+    }
+
+    .cover-art {
+      position: relative;
+      height: 420px;
+      min-width: 350px;
+    }
+
+    .floating-block {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 26px rgba(48, 64, 88, 0.16);
+      border: 3px solid rgba(0,0,0,0.06);
+      font-weight: 800;
+      color: rgba(19, 27, 38, 0.85);
+      animation: floaty 7s ease-in-out infinite;
+    }
+
+    .floating-block:nth-child(1) { left: 12%; top: 14%; width: 176px; height: 68px; background: var(--motion); transform: rotate(-12deg); border-radius: 18px; }
+    .floating-block:nth-child(2) { right: 10%; top: 28%; width: 150px; height: 70px; background: var(--looks); transform: rotate(10deg); border-radius: 18px; }
+    .floating-block:nth-child(3) { left: 16%; bottom: 16%; width: 166px; height: 74px; background: var(--sound); transform: rotate(14deg); border-radius: 18px; }
+    .floating-block:nth-child(4) { right: 18%; bottom: 10%; width: 140px; height: 64px; background: var(--events); transform: rotate(-14deg); border-radius: 18px; }
+    .floating-block:nth-child(5) { left: 38%; top: 22%; width: 120px; height: 56px; background: var(--operators); transform: rotate(6deg); border-radius: 999px; }
+    .floating-block:nth-child(6) { right: 38%; bottom: 25%; width: 140px; height: 64px; background: var(--control); transform: rotate(-8deg); border-radius: 18px; }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+      50% { transform: translateY(-16px) rotate(var(--rot, 0deg)); }
+    }
+
+    .floating-block:nth-child(1) { --rot: -12deg; }
+    .floating-block:nth-child(2) { --rot: 10deg; }
+    .floating-block:nth-child(3) { --rot: 14deg; }
+    .floating-block:nth-child(4) { --rot: -14deg; }
+    .floating-block:nth-child(5) { --rot: 6deg; }
+    .floating-block:nth-child(6) { --rot: -8deg; }
+
+    .tip-badge {
+      display: inline-flex;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.7);
+      color: var(--ink);
+      border: 1px solid rgba(22, 35, 52, 0.08);
+      box-shadow: 0 8px 20px rgba(20, 34, 51, 0.06);
+      margin-top: 28px;
+      font-weight: 700;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 30px;
+      align-items: center;
+      height: calc(100% - 50px);
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.72);
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 26px rgba(29, 42, 58, 0.08);
+      padding: 24px 24px 18px;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-weight: 600;
+      color: #283a4d;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(73, 208, 125, 0.18);
+      color: #1d8d54;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .drag-demo {
+      position: relative;
+      height: 320px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(160deg, rgba(233,241,255,1), rgba(246, 251, 255, 1));
+      border: 1px solid rgba(90,120,170,0.14);
+    }
+
+    .drag-block {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 160px;
+      height: 72px;
+      border-radius: 18px;
+      box-shadow: 0 12px 22px rgba(68,89,122,0.18);
+      color: #11263f;
+      font-weight: 800;
+      user-select: none;
+      cursor: grab;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    .drag-block:active { cursor: grabbing; }
+
+    .drag-block.one { left: 64px; top: 120px; background: var(--motion); }
+    .drag-block.two { right: 76px; top: 120px; background: var(--looks); }
+    .drag-block.connect { box-shadow: 0 0 0 4px rgba(38, 174, 99, 0.18), 0 18px 28px rgba(58, 102, 76, 0.18); filter: saturate(1.05); }
+
+    .drag-target {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 78px;
+      border: 3px dashed rgba(48, 87, 141, 0.4);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.32);
+    }
+
+    .drag-label {
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%);
+      font-weight: 700;
+      color: #2e4968;
+      background: rgba(255,255,255,0.74);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .skill-box {
+      position: relative;
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid var(--line);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .skill-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 18px rgba(25, 39, 57, 0.08);
+    }
+
+    .skill-box .mini-label {
+      display: inline-block;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .skill-box strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+
+    .tooltip {
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      transform: translate(-50%, 8px);
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      color: white;
+      background: rgba(17, 34, 52, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 10px 18px rgba(15,26,38,0.12);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .skill-box:hover .tooltip,
+    .skill-box:focus-within .tooltip {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .category-wrap {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      height: calc(100% - 52px);
+      align-items: stretch;
+    }
+
+    .block-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .block-card {
+      position: relative;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 18px rgba(19,28,38,0.05);
+    }
+
+    .block-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 20px rgba(19,28,38,0.08);
+    }
+
+    .block-card.is-open {
+      border-color: rgba(16, 90, 160, 0.3);
+      box-shadow: 0 12px 18px rgba(35,72,112,0.08);
+    }
+
+    .block-figure {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+      margin-bottom: 10px;
+    }
+
+    .scratch-block {
+      position: relative;
+      min-width: 150px;
+      height: 52px;
+      border-radius: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 18px;
+      font-weight: 800;
+      color: rgba(17,32,52,0.92);
+      border: 2px solid rgba(25, 35, 50, 0.08);
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.06);
+      font-size: 0.95rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .scratch-block.command {
+      background: var(--category);
+      border-radius: 16px;
+    }
+
+    .scratch-block.command::before,
+    .scratch-block.command::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: var(--category);
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 50%;
+    }
+
+    .scratch-block.command::before { left: -10px; }
+    .scratch-block.command::after { right: -10px; }
+
+    .scratch-block.reporter {
+      background: var(--category);
+      border-radius: 999px;
+      min-width: 170px;
+    }
+
+    .scratch-block.boolean {
+      background: var(--category);
+      clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+      min-width: 170px;
+    }
+
+    .scratch-block.oval {
+      background: var(--category);
+      border-radius: 999px;
+      min-width: 180px;
+    }
+
+    .block-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #1b2f47;
+    }
+
+    .block-meta span:last-child {
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .block-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, margin-top 0.25s ease;
+      margin-top: 0;
+    }
+
+    .block-card.is-open .block-detail {
+      max-height: 180px;
+      margin-top: 10px;
+    }
+
+    .block-detail p {
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: #344d67;
+      margin: 0;
+    }
+
+    .category-info {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(248,250,255,0.92));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .category-chip {
+      display: inline-block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: #163351;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(18,31,42,0.08);
+      width: fit-content;
+    }
+
+    .category-info h3 {
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    .category-example {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(21,35,48,0.08);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 700;
+      color: #20344d;
+    }
+
+    .category-example code {
+      font-family: "Consolas", monospace;
+      font-weight: 800;
+      color: #1f3f5e;
+      font-size: 0.9rem;
+    }
+
+    .program-demo {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      height: calc(100% - 50px);
+      align-items: center;
+    }
+
+    .program-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 18px;
+      background: rgba(255,255,255,0.76);
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 25px rgba(25,36,51,0.06);
+    }
+
+    .stack-block {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 58px;
+      padding: 8px 18px;
+      border-radius: 16px;
+      color: #0f2138;
+      font-weight: 800;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.06);
+      border: 2px solid rgba(18,31,44,0.07);
+    }
+
+    .stack-block.event { background: var(--events); }
+    .stack-block.motion { background: var(--motion); }
+    .stack-block.sound { background: var(--sound); }
+    .stack-block.looks { background: var(--looks); }
+
+    .stack-block.active-step {
+      outline: 4px solid rgba(255,255,255,0.95);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 7px rgba(67, 94, 134, 0.16), inset 0 -4px 0 rgba(0,0,0,0.06);
+      transform: translateX(6px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stack-block::before,
+    .stack-block::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: inherit;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .stack-block.event::before { left: -9px; }
+    .stack-block.event::after { right: -9px; }
+    .stack-block.motion::before { left: -9px; }
+    .stack-block.motion::after { right: -9px; }
+    .stack-block.sound::before { left: -9px; }
+    .stack-block.sound::after { right: -9px; }
+    .stack-block.looks::before { left: -9px; }
+    .stack-block.looks::after { right: -9px; }
+
+    .sprite-stage {
+      position: relative;
+      height: 330px;
+      background: linear-gradient(180deg, #dff7ff, #cfefff 45%, #d9f9ef 100%);
+      border-radius: 24px;
+      border: 1px solid rgba(17, 60, 92, 0.14);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .stage-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(29,49,75,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(29,49,75,0.08) 1px, transparent 1px);
+      background-size: 26px 26px;
+      opacity: 0.6;
+    }
+
+    .sprite {
+      position: absolute;
+      left: 50%;
+      bottom: 16%;
+      width: 120px;
+      height: 120px;
+      transform: translateX(-50%);
+      transition: transform 0.7s ease, left 0.7s ease, bottom 0.7s ease;
+    }
+
+    .sprite-face {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 4.4rem;
+      filter: drop-shadow(0 12px 18px rgba(33,64,101,0.12));
+    }
+
+    .speech {
+      position: absolute;
+      left: 50%;
+      top: 18%;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: rgba(255,255,255,0.96);
+      color: #1c2c3f;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 800;
+      box-shadow: 0 14px 24px rgba(34,54,89,0.1);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      border: 1px solid rgba(17, 40, 62, 0.06);
+    }
+
+    .speech::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -10px;
+      transform: translateX(-50%) rotate(45deg);
+      width: 18px;
+      height: 18px;
+      background: rgba(255,255,255,0.96);
+      border-right: 1px solid rgba(17,40,62,0.06);
+      border-bottom: 1px solid rgba(17,40,62,0.06);
+    }
+
+    .speech.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .program-status {
+      min-height: 28px;
+      color: #39516d;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .program-audio {
+      display: none;
+    }
+
+    .cta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .run-btn {
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffe66d, #f8c928);
+      color: #493900;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      padding: 14px 22px;
+      cursor: pointer;
+      box-shadow: 0 12px 22px rgba(234, 184, 28, 0.26);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .run-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(234, 184, 28, 0.34);
+    }
+
+    .run-btn::before {
+      content: "⚑";
+      display: inline-block;
+      margin-right: 8px;
+      color: #218c4a;
+      font-size: 1.15em;
+      line-height: 0;
+      transform: translateY(1px);
+    }
+
+    .run-btn:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .quiz {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .question-card {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 18px 14px;
+      margin: 0;
+      box-shadow: 0 10px 18px rgba(17,22,31,0.05);
+    }
+
+    .slide[data-slide="13"] > .slide-content > .panel {
+      margin: 0 0 18px !important;
+    }
+
+    .slide[data-slide="13"] .quiz {
+      margin: 0 2px;
+    }
+
+    .question-card h3 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      width: 100%;
+      border: 1px solid rgba(16,39,58,0.1);
+      background: rgba(245,249,255,0.9);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 700;
+      color: #1a304b;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .option:hover { transform: translateY(-1px); }
+    .option.correct { background: rgba(73,208,125,0.18); border-color: rgba(44,166,92,0.28); }
+    .option.wrong { background: rgba(255,107,107,0.12); border-color: rgba(198,73,73,0.25); }
+
+    .feedback {
+      margin-top: 12px;
+      font-weight: 800;
+      min-height: 26px;
+      color: #214c6d;
+    }
+
+    .navigation {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -85px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 26px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 0 0 20px 20px;
+      box-shadow: none;
+      z-index: 50;
+      pointer-events: auto;
+    }
+
+    .nav-btn {
+      border: none;
+      background: rgba(255,255,255,0.8);
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-weight: 800;
+      color: var(--ink);
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow: 0 10px 18px rgba(17,31,46,0.06);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .nav-btn:hover:not(:disabled) { transform: translateY(-1px); }
+
+    .progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 16px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(52,74,99,0.25);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 0 0 1px rgba(25,37,49,0.1);
+    }
+
+    .dot.active {
+      width: 26px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4da3ff, #6b7cff);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .deck {
+        height: min(860px, 92vh);
+      }
+
+      .slide {
+        padding: 30px 26px 94px;
+      }
+
+      .cover, .two-col, .category-wrap, .program-demo, .quiz {
+        grid-template-columns: 1fr;
+      }
+
+      .cover-art {
+        height: 280px;
+      }
+
+      .block-list {
+        grid-template-columns: 1fr;
+      }
+
+      .skills-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        align-items: flex-start;
+        padding: 12px 10px 86px;
+        overflow-x: hidden;
+      }
+
+      .deck {
+        width: 100%;
+        height: calc(100vh - 104px);
+        min-height: 520px;
+        margin-bottom: 72px;
+        border-radius: 18px;
+      }
+
+      .slide {
+        padding: 24px 16px 76px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .slide-content {
+        min-height: 100%;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 10vw, 3rem);
+      }
+
+      h2 {
+        font-size: clamp(1.55rem, 8vw, 2.2rem);
+        margin-bottom: 14px;
+      }
+
+      h3 {
+        font-size: 1.15rem;
+      }
+
+      p, li {
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .cover {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .cover-art {
+        width: 100%;
+        min-width: 0;
+        height: 220px;
+        margin-top: 4px;
+      }
+
+      .floating-block {
+        min-width: 0;
+        font-size: 0.78rem;
+        border-width: 2px;
+      }
+
+      .floating-block:nth-child(1) { width: 112px; height: 48px; }
+      .floating-block:nth-child(2) { width: 98px; height: 48px; }
+      .floating-block:nth-child(3) { width: 110px; height: 50px; }
+      .floating-block:nth-child(4) { width: 90px; height: 46px; }
+      .floating-block:nth-child(5) { width: 84px; height: 40px; }
+      .floating-block:nth-child(6) { width: 92px; height: 46px; }
+
+      .panel,
+      .category-info,
+      .question-card {
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      .two-col,
+      .category-wrap,
+      .program-demo {
+        height: auto;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .drag-demo {
+        height: 260px;
+      }
+
+      .drag-block {
+        min-width: 130px;
+        height: 58px;
+        font-size: 0.75rem;
+      }
+
+      .drag-block.one {
+        left: 14px;
+        top: 100px;
+      }
+
+      .drag-block.two {
+        right: 14px;
+        top: 100px;
+      }
+
+      .drag-target {
+        width: 160px;
+        height: 64px;
+      }
+
+      .skills-grid,
+      .block-list,
+      .quiz {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .block-list {
+        order: 1;
+      }
+
+      .category-info {
+        order: 2;
+        min-height: 180px;
+      }
+
+      .block-card {
+        padding: 12px;
+      }
+
+      .scratch-block {
+        max-width: 100%;
+        min-width: 0;
+        font-size: 0.78rem;
+        white-space: normal;
+        text-align: center;
+      }
+
+      .scratch-block.reporter,
+      .scratch-block.boolean,
+      .scratch-block.oval {
+        min-width: 0;
+        width: min(100%, 220px);
+      }
+
+      .program-stack {
+        gap: 10px;
+      }
+
+      .stack-block {
+        width: 100%;
+        min-height: 52px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        text-align: center;
+      }
+
+      .sprite-stage {
+        height: 250px;
+      }
+
+      .cta-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .run-btn {
+        width: 100%;
+      }
+
+      .navigation {
+        left: 0;
+        right: 0;
+        bottom: -72px;
+        height: 72px;
+        padding: 10px 6px;
+        gap: 6px;
+      }
+
+      .nav-btn {
+        flex: 0 0 auto;
+        padding: 9px 11px;
+        font-size: 0.84rem;
+      }
+
+      .progress {
+        gap: 5px;
+        padding: 0 4px;
+        flex: 1 1 auto;
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+      }
+
+      .dot.active {
+        width: 18px;
+      }
+
+      .slide[data-slide="13"] {
+        padding-bottom: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" aria-live="polite">
+    <section class="slide active" data-slide="1">
+      <div class="slide-content cover">
+        <div class="cover-copy">
+          <div class="eyebrow">Informatika SMP Kelas VIII</div>
+          <div class="title-wrap">
+            <h1>Mengenal Blok Kode di Scratch</h1>
+          </div>
+          <p class="subtitle">Belajar cara kerja blok kode visual yang menyenangkan, mudah dipahami, dan membantu kita membuat animasi, game, serta cerita interaktif.</p>
+          <div class="tip-badge">Scratch = pemrograman visual berbasis blok</div>
+        </div>
+        <div class="cover-art" aria-hidden="true">
+          <div class="floating-block">move</div>
+          <div class="floating-block">say</div>
+          <div class="floating-block">sound</div>
+          <div class="floating-block">when</div>
+          <div class="floating-block">repeat</div>
+          <div class="floating-block">if</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="2">
+      <div class="slide-content two-col">
+        <div>
+          <h2>Apa itu Scratch?</h2>
+          <p>Scratch adalah bahasa pemrograman visual berbasis blok yang dikembangkan oleh MIT. Kode tidak ditulis sebagai teks panjang, tetapi disusun seperti puzzle yang saling terhubung.</p>
+          <ul class="feature-list">
+            <li>Blok dipasang seperti potongan puzzle agar lebih mudah dipahami.</li>
+            <li>Digunakan untuk membuat animasi, game, cerita, dan proyek interaktif.</li>
+            <li>Memudahkan siswa belajar logika dan urutan program tanpa takut salah menulis kode.</li>
+          </ul>
+        </div>
+        <div class="drag-demo panel" aria-label="Demo drag and drop blok">
+          <div class="drag-label">Drag &amp; drop</div>
+          <div class="drag-target"></div>
+          <div class="drag-block one" tabindex="0" aria-label="Blok pertama">move (10) steps</div>
+          <div class="drag-block two" tabindex="0" aria-label="Blok kedua">say [Halo!] for (2) sec</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="3">
+      <div class="slide-content">
+        <h2>Bagian Utama Scratch</h2>
+        <div class="skills-grid">
+          <div class="skill-box" tabindex="0">
+            <div class="mini-label">1</div>
+            <strong>Stage</strong>
+            <div>Area kerja tempat proyek ditampilkan dan dijalankan.</div>
+            <div class="tooltip">Tempat hasil program terlihat</div>
+          </div>
+          <div class="skill-box" tabindex="0">
+            <div class="mini-label">2</div>
+            <strong>Sprite</strong>
+            <div>Karakter atau objek yang bergerak dalam proyek.</div>
+            <div class="tooltip">Benda yang diberi program</div>
+          </div>
+          <div class="skill-box" tabindex="0">
+            <div class="mini-label">3</div>
+            <strong>Script Area</strong>
+            <div>Tempat kita menyusun blok perintah agar membentuk program.</div>
+            <div class="tooltip">Tempat logika program dibuat</div>
+          </div>
+          <div class="skill-box" tabindex="0">
+            <div class="mini-label">4</div>
+            <strong>Block Palette</strong>
+            <div>Kumpulan blok berdasarkan kategori, seperti Motion, Sound, dan Events.</div>
+            <div class="tooltip">Sumber blok yang digunakan</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="4">
+      <div class="slide-content">
+        <h2>Motion</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="motion" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--motion);">move 10 steps</div></div>
+              <div class="block-meta"><span>move</span><span>Motion</span></div>
+              <div class="block-detail"><p>Blok ini membuat sprite bergerak maju sesuai jumlah langkah yang ditentukan.</p></div>
+            </div>
+            <div class="block-card" data-category="motion" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--motion);">turn @ 15 degrees</div></div>
+              <div class="block-meta"><span>turn</span><span>Motion</span></div>
+              <div class="block-detail"><p>Blok ini memutar arah sprite ke kiri atau kanan sesuai sudut yang ditulis.</p></div>
+            </div>
+            <div class="block-card" data-category="motion" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--motion);">x position</div></div>
+              <div class="block-meta"><span>x position</span><span>Reporter</span></div>
+              <div class="block-detail"><p>Blok ini menampilkan posisi sprite pada sumbu X di stage.</p></div>
+            </div>
+            <div class="block-card" data-category="motion" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--motion);">go to x: y:</div></div>
+              <div class="block-meta"><span>go to</span><span>Motion</span></div>
+              <div class="block-detail"><p>Blok ini menggerakkan sprite ke titik tertentu pada stage.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--motion);">
+            <div>
+              <div class="category-chip" style="background: rgba(77,163,255,0.12);">KATEGORI MOTION</div>
+              <h3>Mengatur gerak sprite</h3>
+              <p>Blok Motion digunakan untuk menggerakkan sprite, memutar arah, dan menentukan posisi di stage.</p>
+            </div>
+            <div class="category-example"><code>move (10) steps</code><br />Contoh: sprite bergerak maju 10 langkah.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="5">
+      <div class="slide-content">
+        <h2>Looks</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="looks" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--looks);">say [Halo!] for 2 seconds</div></div>
+              <div class="block-meta"><span>say</span><span>Looks</span></div>
+              <div class="block-detail"><p>Blok ini menampilkan kalimat dalam gelembung bicara selama beberapa detik.</p></div>
+            </div>
+            <div class="block-card" data-category="looks" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--looks);">switch costume to</div></div>
+              <div class="block-meta"><span>costume</span><span>Looks</span></div>
+              <div class="block-detail"><p>Blok ini mengubah tampilan sprite dari satu kostum ke kostum lainnya.</p></div>
+            </div>
+            <div class="block-card" data-category="looks" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--looks);">size</div></div>
+              <div class="block-meta"><span>size</span><span>Reporter</span></div>
+              <div class="block-detail"><p>Blok ini menunjukkan ukuran dari sprite saat ini.</p></div>
+            </div>
+            <div class="block-card" data-category="looks" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--looks);">hide</div></div>
+              <div class="block-meta"><span>hide</span><span>Looks</span></div>
+              <div class="block-detail"><p>Blok ini membuat sprite tidak terlihat di stage.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--looks);">
+            <div>
+              <div class="category-chip" style="background: rgba(183,121,255,0.12);">KATEGORI LOOKS</div>
+              <h3>Mengatur tampilan sprite</h3>
+              <p>Blok Looks mengendalikan kostum, teks, visibilitas, dan efek pada sprite.</p>
+            </div>
+            <div class="category-example"><code>say [Halo!] for (2) seconds</code><br />Menampilkan ucapan yang terhubung dengan karakter.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="6">
+      <div class="slide-content">
+        <h2>Sound</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="sound" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--sound);">play sound [pop] until done</div></div>
+              <div class="block-meta"><span>play sound</span><span>Sound</span></div>
+              <div class="block-detail"><p>Blok ini memutar efek suara dengan durasi tertentu sampai selesai.</p></div>
+            </div>
+            <div class="block-card" data-category="sound" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--sound);">stop all sounds</div></div>
+              <div class="block-meta"><span>stop</span><span>Sound</span></div>
+              <div class="block-detail"><p>Blok ini menghentikan semua suara yang sedang diputar.</p></div>
+            </div>
+            <div class="block-card" data-category="sound" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--sound);">volume</div></div>
+              <div class="block-meta"><span>volume</span><span>Reporter</span></div>
+              <div class="block-detail"><p>Blok ini menunjukkan atau mengatur besar kecilnya audio yang diputar.</p></div>
+            </div>
+            <div class="block-card" data-category="sound" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--sound);">change volume by -10</div></div>
+              <div class="block-meta"><span>change volume</span><span>Sound</span></div>
+              <div class="block-detail"><p>Blok ini menaikkan atau menurunkan volume sesuai angka yang ditentukan.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--sound);">
+            <div>
+              <div class="category-chip" style="background: rgba(255,90,200,0.12);">KATEGORI SOUND</div>
+              <h3>Mengatur audio</h3>
+              <p>Blok Sound berfungsi untuk memainkan musik, efek suara, dan mengatur volume proyek.</p>
+            </div>
+            <div class="category-example"><code>play sound [pop] until done</code><br />Efek suara akan diputar sampai selesai.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="7">
+      <div class="slide-content">
+        <h2>Events</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="events" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--events);">when green flag clicked</div></div>
+              <div class="block-meta"><span>green flag</span><span>Events</span></div>
+              <div class="block-detail"><p>Blok ini memulai program saat tombol hijau diklik.</p></div>
+            </div>
+            <div class="block-card" data-category="events" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--events);">when this sprite clicked</div></div>
+              <div class="block-meta"><span>sprite clicked</span><span>Events</span></div>
+              <div class="block-detail"><p>Blok ini dijalankan saat pengguna mengklik sprite tertentu.</p></div>
+            </div>
+            <div class="block-card" data-category="events" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--events);">broadcast [message]</div></div>
+              <div class="block-meta"><span>broadcast</span><span>Events</span></div>
+              <div class="block-detail"><p>Blok ini mengirim sinyal atau pesan ke sprite lain agar menjalankan aksi tertentu.</p></div>
+            </div>
+            <div class="block-card" data-category="events" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--events);">when I receive [message]</div></div>
+              <div class="block-meta"><span>receive</span><span>Events</span></div>
+              <div class="block-detail"><p>Blok ini menunggu pesan tertentu untuk memulai aksi berikutnya.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--events);">
+            <div>
+              <div class="category-chip" style="background: rgba(255,217,61,0.2);">KATEGORI EVENTS</div>
+              <h3>Memulai dan menghubungkan aksi</h3>
+              <p>Blok Events digunakan untuk memulai program, merespons klik, dan mengirim pesan antar sprite.</p>
+            </div>
+            <div class="category-example"><code>when green flag clicked</code><br />Program dimulai saat user menekan tombol hijau.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="8">
+      <div class="slide-content">
+        <h2>Control</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="control" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--control);">wait 1 seconds</div></div>
+              <div class="block-meta"><span>wait</span><span>Control</span></div>
+              <div class="block-detail"><p>Blok ini memberi jeda sebelum lanjut ke perintah berikutnya.</p></div>
+            </div>
+            <div class="block-card" data-category="control" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--control);">repeat 10</div></div>
+              <div class="block-meta"><span>repeat</span><span>Control</span></div>
+              <div class="block-detail"><p>Blok ini menjalankan perintah beberapa kali secara berulang.</p></div>
+            </div>
+            <div class="block-card" data-category="control" tabindex="0">
+              <div class="block-figure"><div class="scratch-block boolean" style="--category: var(--control);">if &lt;condition&gt; then</div></div>
+              <div class="block-meta"><span>if</span><span>Control</span></div>
+              <div class="block-detail"><p>Jika kondisi benar, perintah di dalamnya akan dijalankan.</p></div>
+            </div>
+            <div class="block-card" data-category="control" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--control);">forever</div></div>
+              <div class="block-meta"><span>forever</span><span>Control</span></div>
+              <div class="block-detail"><p>Blok ini membuat program terus berjalan selama proyek aktif.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--control);">
+            <div>
+              <div class="category-chip" style="background: rgba(255,159,67,0.12);">KATEGORI CONTROL</div>
+              <h3>Mengatur alur program</h3>
+              <p>Blok Control membantu mengatur urutan, pengulangan, dan keputusan dalam program.</p>
+            </div>
+            <div class="category-example"><code>repeat 10</code><br />Aksi akan dijalankan berulang beberapa kali.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="9">
+      <div class="slide-content">
+        <h2>Sensing</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="sensing" tabindex="0">
+              <div class="block-figure"><div class="scratch-block boolean" style="--category: var(--sensing);">touching [mouse-pointer] ?</div></div>
+              <div class="block-meta"><span>touching</span><span>Sensing</span></div>
+              <div class="block-detail"><p>Blok ini mengecek apakah sprite sedang bersentuhan dengan objek tertentu.</p></div>
+            </div>
+            <div class="block-card" data-category="sensing" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--sensing);">mouse x</div></div>
+              <div class="block-meta"><span>mouse x</span><span>Reporter</span></div>
+              <div class="block-detail"><p>Blok ini menampilkan posisi mouse pada sumbu X.</p></div>
+            </div>
+            <div class="block-card" data-category="sensing" tabindex="0">
+              <div class="block-figure"><div class="scratch-block boolean" style="--category: var(--sensing);">key [space] pressed?</div></div>
+              <div class="block-meta"><span>key pressed</span><span>Sensing</span></div>
+              <div class="block-detail"><p>Blok ini mengecek apakah tombol keyboard tertentu sedang ditekan.</p></div>
+            </div>
+            <div class="block-card" data-category="sensing" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--sensing);">timer</div></div>
+              <div class="block-meta"><span>timer</span><span>Sensing</span></div>
+              <div class="block-detail"><p>Blok ini menampilkan waktu yang sudah berjalan dalam proyek.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--sensing);">
+            <div>
+              <div class="category-chip" style="background: rgba(56,216,255,0.12);">KATEGORI SENSING</div>
+              <h3>Mendeteksi kondisi</h3>
+              <p>Blok Sensing digunakan untuk membaca input dari mouse, keyboard, sensor, dan kondisi lingkungan.</p>
+            </div>
+            <div class="category-example"><code>if &lt;key [space] pressed?&gt; then</code><br />Program dapat merespons input dari keyboard.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="10">
+      <div class="slide-content">
+        <h2>Operators</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="operators" tabindex="0">
+              <div class="block-figure"><div class="scratch-block oval" style="--category: var(--operators);">10 + 5</div></div>
+              <div class="block-meta"><span>addition</span><span>Operators</span></div>
+              <div class="block-detail"><p>Blok ini melakukan operasi matematika seperti penjumlahan.</p></div>
+            </div>
+            <div class="block-card" data-category="operators" tabindex="0">
+              <div class="block-figure"><div class="scratch-block boolean" style="--category: var(--operators);">&lt; 10 &gt;</div></div>
+              <div class="block-meta"><span>comparison</span><span>Operators</span></div>
+              <div class="block-detail"><p>Blok ini membandingkan dua nilai untuk menghasilkan benar atau salah.</p></div>
+            </div>
+            <div class="block-card" data-category="operators" tabindex="0">
+              <div class="block-figure"><div class="scratch-block boolean" style="--category: var(--operators);">and / or</div></div>
+              <div class="block-meta"><span>logic</span><span>Operators</span></div>
+              <div class="block-detail"><p>Blok ini menggabungkan beberapa kondisi dengan logika AND atau OR.</p></div>
+            </div>
+            <div class="block-card" data-category="operators" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--operators);">pick random 1 to 10</div></div>
+              <div class="block-meta"><span>random</span><span>Operators</span></div>
+              <div class="block-detail"><p>Blok ini memilih angka acak dalam rentang tertentu.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--operators);">
+            <div>
+              <div class="category-chip" style="background: rgba(73,208,125,0.12);">KATEGORI OPERATORS</div>
+              <h3>Melakukan hitungan dan logika</h3>
+              <p>Blok Operators digunakan untuk matematika, pembanding, angka acak, dan penggabungan kondisi.</p>
+            </div>
+            <div class="category-example"><code>pick random (1) to (10)</code><br />Membuat nilai acak untuk keperluan permainan.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="11">
+      <div class="slide-content">
+        <h2>Variables</h2>
+        <div class="category-wrap">
+          <div class="block-list">
+            <div class="block-card" data-category="variables" tabindex="0">
+              <div class="block-figure"><div class="scratch-block reporter" style="--category: var(--variables);">my variable</div></div>
+              <div class="block-meta"><span>variable</span><span>Variables</span></div>
+              <div class="block-detail"><p>Variabel menyimpan nilai yang dapat berubah saat program berjalan.</p></div>
+            </div>
+            <div class="block-card" data-category="variables" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--variables);">set [score] to 0</div></div>
+              <div class="block-meta"><span>set</span><span>Variables</span></div>
+              <div class="block-detail"><p>Blok ini memberi nilai awal pada variabel.</p></div>
+            </div>
+            <div class="block-card" data-category="variables" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--variables);">change [score] by 1</div></div>
+              <div class="block-meta"><span>change</span><span>Variables</span></div>
+              <div class="block-detail"><p>Blok ini menambah atau mengurangi nilai variabel.</p></div>
+            </div>
+            <div class="block-card" data-category="variables" tabindex="0">
+              <div class="block-figure"><div class="scratch-block command" style="--category: var(--variables);">show variable [score]</div></div>
+              <div class="block-meta"><span>show</span><span>Variables</span></div>
+              <div class="block-detail"><p>Blok ini menampilkan nilai variabel di stage agar pemain dapat melihatnya.</p></div>
+            </div>
+          </div>
+          <aside class="category-info" style="border-top: 6px solid var(--variables);">
+            <div>
+              <div class="category-chip" style="background: rgba(255,122,56,0.14);">KATEGORI VARIABLES</div>
+              <h3>Menyimpan data</h3>
+              <p>Variabel berguna untuk menyimpan skor, waktu, angka, atau data yang berubah selama game atau animasi.</p>
+            </div>
+            <div class="category-example"><code>set [score] to (0)</code><br />Skor mulai dari nol lalu bisa berubah saat pemain berinteraksi.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="12">
+      <div class="slide-content">
+        <h2>Contoh Program Sederhana</h2>
+        <div class="program-demo">
+          <div class="program-stack panel">
+            <div class="stack-block event">when green flag clicked</div>
+            <div class="stack-block motion">move (10) steps</div>
+            <div class="stack-block sound">play sound [pop] until done</div>
+            <div class="stack-block looks">say [Halo!] for (2) seconds</div>
+            <div class="cta-row">
+              <div>
+                <!-- <div class="eyebrow" style="margin: 0; padding: 8px 14px;">Contoh program</div> -->
+                <div class="program-status" id="programStatus" role="status">Siap dijalankan.</div>
+              </div>
+              <button class="run-btn" id="runProgram" type="button" aria-label="Bendera hijau, jalankan program">Jalankan</button>
+            </div>
+          </div>
+          <div class="sprite-stage" aria-label="Simulasi hasil program">
+            <div class="stage-grid"></div>
+            <div class="speech" id="speechBubble">Halo!</div>
+            <div class="sprite" id="spriteVisual" aria-hidden="true">
+              <div class="sprite-face">🙂</div>
+            </div>
+          </div>
+          <audio id="popSound" class="program-audio" preload="auto">
+            <source src="pop-sound.mp3" type="audio/mpeg">
+          </audio>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="13">
+      <div class="slide-content">
+        <h2>Kesimpulan</h2>
+        <div class="panel" style="padding: 24px 26px; margin-top: 14px;">
+          <ul class="feature-list" style="margin-top: 0;">
+            <li>Scratch menggunakan blok visual yang mudah dipahami dan disusun seperti puzzle.</li>
+            <li>Setiap kategori blok memiliki fungsi tertentu, seperti gerak, tampilan, suara, logika, hingga variabel.</li>
+            <li>Dengan memahami kategori blok, kita dapat membuat proyek interaktif yang lebih kompleks dan terstruktur.</li>
+          </ul>
+        </div>
+        <div class="quiz">
+          <div class="question-card">
+            <h3>1. Blok mana yang termasuk kategori Events?</h3>
+            <div class="options">
+              <button class="option" data-answer="false">move 10 steps</button>
+              <button class="option" data-answer="true">when green flag clicked</button>
+              <button class="option" data-answer="false">play sound</button>
+              <button class="option" data-answer="false">set score to 0</button>
+            </div>
+            <div class="feedback"></div>
+          </div>
+          <div class="question-card">
+            <h3>2. Fungsi blok Variables adalah?</h3>
+            <div class="options">
+              <button class="option" data-answer="false">mengubah suara</button>
+              <button class="option" data-answer="false">menggerakkan sprite</button>
+              <button class="option" data-answer="true">menyimpan dan mengubah data seperti skor</button>
+              <button class="option" data-answer="false">mendeteksi sentuhan</button>
+            </div>
+            <div class="feedback"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="navigation" aria-label="Navigasi slide">
+      <button class="nav-btn" id="prevBtn" type="button">Prev</button>
+      <div class="progress" id="progressDots" aria-label="Progress slide"></div>
+      <button class="nav-btn" id="nextBtn" type="button">Next</button>
+    </nav>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressDots = document.getElementById('progressDots');
+    let currentSlide = 0;
+    let programRunId = 0;
+
+    slides.forEach((slide, idx) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'dot' + (idx === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', 'Slide ' + (idx + 1));
+      dot.addEventListener('click', () => showSlide(idx));
+      progressDots.appendChild(dot);
+    });
+
+    function showSlide(index) {
+      currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentSlide);
+      });
+
+      const dots = Array.from(document.querySelectorAll('.dot'));
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentSlide);
+      });
+
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.textContent = currentSlide === slides.length - 1 ? 'End' : 'Next';
+    }
+
+    function goToPreviousSlide(event) {
+      event?.preventDefault();
+      if (currentSlide > 0) showSlide(currentSlide - 1);
+    }
+
+    function goToNextSlide(event) {
+      event?.preventDefault();
+      if (currentSlide < slides.length - 1) {
+        showSlide(currentSlide + 1);
+      } else {
+        showSlide(0);
+      }
+    }
+
+    prevBtn.addEventListener('click', goToPreviousSlide);
+    nextBtn.addEventListener('click', goToNextSlide);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+        goToNextSlide(event);
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+        goToPreviousSlide(event);
+      }
+    });
+
+    document.querySelectorAll('.block-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('is-open');
+      });
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          card.classList.toggle('is-open');
+        }
+      });
+    });
+
+    const demoBlock1 = document.querySelector('.drag-block.one');
+    const demoBlock2 = document.querySelector('.drag-block.two');
+    const dragTarget = document.querySelector('.drag-target');
+
+    let activeDrag = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    function updateConnectedState() {
+      const targetRect = dragTarget.getBoundingClientRect();
+      const blockRect1 = demoBlock1.getBoundingClientRect();
+      const blockRect2 = demoBlock2.getBoundingClientRect();
+
+      const block1Near = Math.abs((blockRect1.left + blockRect1.width/2) - (targetRect.left + targetRect.width/2)) < 90 && Math.abs((blockRect1.top + blockRect1.height/2) - (targetRect.top + targetRect.height/2)) < 70;
+      const block2Near = Math.abs((blockRect2.left + blockRect2.width/2) - (targetRect.left + targetRect.width/2)) < 90 && Math.abs((blockRect2.top + blockRect2.height/2) - (targetRect.top + targetRect.height/2)) < 70;
+
+      demoBlock1.classList.toggle('connect', block1Near);
+      demoBlock2.classList.toggle('connect', block2Near);
+    }
+
+    function startDrag(block, event) {
+      activeDrag = block;
+      const rect = block.getBoundingClientRect();
+      dragOffsetX = event.clientX - rect.left;
+      dragOffsetY = event.clientY - rect.top;
+      block.style.right = 'auto';
+      block.style.zIndex = '20';
+      if (block.setPointerCapture) block.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    }
+
+    demoBlock1.addEventListener('pointerdown', (event) => startDrag(demoBlock1, event));
+    demoBlock2.addEventListener('pointerdown', (event) => startDrag(demoBlock2, event));
+
+    document.addEventListener('pointermove', (event) => {
+      if (!activeDrag) return;
+      const parentRect = activeDrag.parentElement.getBoundingClientRect();
+      const x = Math.min(Math.max(event.clientX - parentRect.left - dragOffsetX, 8), parentRect.width - activeDrag.offsetWidth - 8);
+      const y = Math.min(Math.max(event.clientY - parentRect.top - dragOffsetY, 8), parentRect.height - activeDrag.offsetHeight - 8);
+      activeDrag.style.left = x + 'px';
+      activeDrag.style.top = y + 'px';
+      updateConnectedState();
+    });
+
+    document.addEventListener('pointerup', () => {
+      if (!activeDrag) return;
+      activeDrag.style.zIndex = '1';
+      activeDrag = null;
+      updateConnectedState();
+    });
+
+    const runBtn = document.getElementById('runProgram');
+    const spriteVisual = document.getElementById('spriteVisual');
+    const speechBubble = document.getElementById('speechBubble');
+    const programStatus = document.getElementById('programStatus');
+    const programBlocks = Array.from(document.querySelectorAll('.program-stack .stack-block'));
+    const popSound = document.getElementById('popSound');
+
+    function wait(milliseconds) {
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    }
+
+    function playPopSound() {
+      popSound.currentTime = 0;
+      const playback = popSound.play();
+
+      if (playback && typeof playback.then === 'function') {
+        return playback.then(() => new Promise((resolve) => {
+          const finish = () => {
+            popSound.removeEventListener('ended', finish);
+            resolve();
+          };
+          popSound.addEventListener('ended', finish, { once: true });
+          if (popSound.duration && Number.isFinite(popSound.duration)) {
+            setTimeout(finish, Math.max(800, popSound.duration * 1000 + 100));
+          }
+        })).catch(() => {
+          programStatus.textContent = 'Audio pop tidak dapat diputar. Periksa file pop-sound.mp3.';
+        });
+      }
+
+      return Promise.resolve();
+    }
+
+    async function runProgram() {
+      const runId = ++programRunId;
+      runBtn.disabled = true;
+      speechBubble.classList.remove('show');
+      spriteVisual.style.transform = 'translateX(-50%)';
+      programBlocks.forEach((block) => block.classList.remove('active-step'));
+
+      const steps = [
+        { text: '1/4 Memulai saat bendera hijau diklik.', duration: 500 },
+        { text: '2/4 Sprite bergerak 10 langkah.', duration: 700, action: () => { spriteVisual.style.transform = 'translateX(-50%) translateX(120px)'; } },
+        { text: '3/4 Memutar suara pop sampai selesai.', duration: 0, action: playPopSound },
+        { text: '4/4 Sprite mengatakan “Halo!”.', duration: 1500, action: () => speechBubble.classList.add('show') }
+      ];
+
+      for (let index = 0; index < steps.length; index += 1) {
+        if (runId !== programRunId) return;
+        const step = steps[index];
+        programBlocks[index].classList.add('active-step');
+        programStatus.textContent = step.text;
+        if (step.action) await step.action();
+        await wait(step.duration);
+        programBlocks[index].classList.remove('active-step');
+      }
+
+      if (runId === programRunId) {
+        spriteVisual.style.transform = 'translateX(-50%)';
+        speechBubble.classList.remove('show');
+        programStatus.textContent = 'Selesai. Klik “Jalankan” untuk mengulang.';
+        runBtn.disabled = false;
+      }
+    }
+
+    runBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      runProgram();
+    });
+
+    document.querySelectorAll('.question-card .option').forEach((option) => {
+      option.addEventListener('click', () => {
+        const feedback = option.parentElement.parentElement.querySelector('.feedback');
+        const isCorrect = option.dataset.answer === 'true';
+
+        option.parentElement.querySelectorAll('.option').forEach((btn) => {
+          btn.disabled = true;
+          btn.classList.remove('correct', 'wrong');
+          if (btn.dataset.answer === 'true') btn.classList.add('correct');
+          if (btn === option && !isCorrect) btn.classList.add('wrong');
+        });
+
+        feedback.textContent = isCorrect ? 'Benar! Jawaban kamu tepat.' : 'Salah. Coba cek kategori bloknya lagi.';
+      });
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
